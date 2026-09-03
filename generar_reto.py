@@ -3,7 +3,7 @@ import os
 import urllib.request
 from urllib.error import HTTPError, URLError
 
-# Cargar variables secretas (limpiando espacios)
+# Cargar variables secretas
 gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
 supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 supabase_key = os.environ.get("SUPABASE_KEY", "").strip()
@@ -22,8 +22,8 @@ prompt = (
     "}"
 )
 
-# Limpiamos posibles corchetes colados por error
-gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_key}"
+# SOLUCIÓN: Usamos la API versión v1 estable y el modelo actual 1.5-flash
+gemini_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={gemini_key}"
 gemini_url = gemini_url.replace("[", "").replace("]", "")
 
 headers = {"Content-Type": "application/json"}
@@ -41,7 +41,6 @@ try:
         res_data = json.loads(response.read().decode("utf-8"))
         raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
         
-        # Limpiamos los bloques de codigo markdown que a veces pone la IA
         clean_text = raw_text.strip().removeprefix("```json").removesuffix("```").strip()
         data_json = json.loads(clean_text)
         
@@ -55,7 +54,7 @@ except Exception as e:
     print("Texto capturado:", raw_text)
     exit(1)
 
-# 2. Guardar en Supabase (limpiando corchetes tambien)
+# 2. Guardar en Supabase
 supabase_endpoint = f"{supabase_url}/rest/v1/retos"
 supabase_endpoint = supabase_endpoint.replace("[", "").replace("]", "")
 
