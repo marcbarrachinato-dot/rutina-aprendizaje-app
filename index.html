@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reto de Aprendizaje Diario</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 600px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+    .tag { display: inline-block; background: #3b82f6; color: white; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px; margin-bottom: 1rem; }
+    h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff; }
+    p.desc { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
+    .box { background: #0f172a; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+    .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
+    .box-text { color: #e2e8f0; font-weight: 600; }
+    .timer { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="app">
+    <p>Cargando el reto del día...</p>
+  </div>
+
+  <script>
+    // SUSTITUYE ESTOS DOS VALORES CON TUS CLAVES DE SUPABASE
+    const SUPABASE_URL = "https://seklglwsenfsefkjmotf.supabase.co/rest/v1/"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_0Fza03ndiV9l0XPGPr9m9A_erhuMq3H
+"; 
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function cargarReto() {
+      const { data, error } = await supabase
+        .from('retos')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(1);
+
+      const app = document.getElementById('app');
+
+      if (error || !data || data.length === 0) {
+        app.innerHTML = '<h1>Aún no hay retos disponibles</h1><p class="desc">Vuelve más tarde.</p>';
+        return;
+      }
+
+      const reto = data[0];
+      app.innerHTML = `
+        <span class="tag">${reto.categoria || 'General'}</span>
+        <h1>${reto.titulo}</h1>
+        <p class="desc">${reto.descripcion}</p>
+        <div class="box">
+          <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
+          <div class="box-text">${reto.pregunta_clave}</div>
+        </div>
+        <div class="timer">⏱️ Dedícale 1 hora hoy a investigar este tema.</div>
+      `;
+    }
+
+    cargarReto();
+  </script>
+</body>
+</html>
