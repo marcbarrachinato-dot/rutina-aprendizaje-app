@@ -3,7 +3,7 @@ import os
 import urllib.request
 from urllib.error import HTTPError
 
-# Cargar variables secretas (limpiando espacios en blanco por si acaso)
+# Cargar variables secretas (limpiando espacios)
 gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
 supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 supabase_key = os.environ.get("SUPABASE_KEY", "").strip()
@@ -22,8 +22,8 @@ prompt = (
     "}"
 )
 
-# Actualizado al modelo "latest"
-gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={gemini_key}"
+# AQUÍ ESTABA EL ERROR: Volvemos al nombre correcto del modelo
+gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
 headers = {"Content-Type": "application/json"}
 payload = {
     "contents": [{"parts": [{"text": prompt}]}],
