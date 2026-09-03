@@ -1,0 +1,25 @@
+name: Generador Diario de Retos
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Se ejecuta todos los dias a las 00:00 UTC
+  workflow_dispatch: # Permite probarlo manualmente cuando quieras
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Ejecutar script generador
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python generar_reto.py
