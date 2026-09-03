@@ -1,7 +1,7 @@
 import json
 import os
 import urllib.request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 # Cargar variables secretas (limpiando espacios)
 gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
@@ -22,16 +22,19 @@ prompt = (
     "}"
 )
 
-# Usamos el modelo gemini-pro, que no tiene bloqueos regionales
-gemini_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=){gemini_key}"
+# Limpiamos posibles corchetes colados por error
+gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_key}"
+gemini_url = gemini_url.replace("[", "").replace("]", "")
+
 headers = {"Content-Type": "application/json"}
-payload = {
-    "contents": [{"parts": [{"text": prompt}]}]
-}
+payload = {"contents": [{"parts": [{"text": prompt}]}]}
 
 req = urllib.request.Request(
     gemini_url, data=json.dumps(payload).encode("utf-8"), headers=headers
 )
+
+raw_text = "No se pudo conectar con la IA."
+data_json = None
 
 try:
     with urllib.request.urlopen(req) as response:
@@ -48,12 +51,14 @@ except HTTPError as e:
     print(e.read().decode("utf-8"))
     exit(1)
 except Exception as e:
-    print("ERROR PROCESANDO JSON:", e)
-    print("Texto recibido de la IA:", raw_text)
+    print("ERROR PROCESANDO LA IA:", e)
+    print("Texto capturado:", raw_text)
     exit(1)
 
-# 2. Guardar en Supabase
+# 2. Guardar en Supabase (limpiando corchetes tambien)
 supabase_endpoint = f"{supabase_url}/rest/v1/retos"
+supabase_endpoint = supabase_endpoint.replace("[", "").replace("]", "")
+
 supa_headers = {
     "apikey": supabase_key,
     "Authorization": f"Bearer {supabase_key}",
@@ -74,4 +79,7 @@ try:
 except HTTPError as e:
     print(f"ERROR EN SUPABASE (Codigo {e.code}):")
     print(e.read().decode("utf-8"))
+    exit(1)
+except Exception as e:
+    print("ERROR DE CONEXION EN SUPABASE:", e)
     exit(1)
