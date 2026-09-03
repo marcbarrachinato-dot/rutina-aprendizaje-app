@@ -22,12 +22,11 @@ prompt = (
     "}"
 )
 
-# AQUÍ ESTABA EL ERROR: Volvemos al nombre correcto del modelo
-gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+# Usamos el modelo gemini-pro, que no tiene bloqueos regionales
+gemini_url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=){gemini_key}"
 headers = {"Content-Type": "application/json"}
 payload = {
-    "contents": [{"parts": [{"text": prompt}]}],
-    "generationConfig": {"response_mime_type": "application/json"},
+    "contents": [{"parts": [{"text": prompt}]}]
 }
 
 req = urllib.request.Request(
@@ -38,11 +37,19 @@ try:
     with urllib.request.urlopen(req) as response:
         res_data = json.loads(response.read().decode("utf-8"))
         raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-        data_json = json.loads(raw_text)
+        
+        # Limpiamos los bloques de codigo markdown que a veces pone la IA
+        clean_text = raw_text.strip().removeprefix("```json").removesuffix("```").strip()
+        data_json = json.loads(clean_text)
+        
         print("¡Gemini respondio correctamente!")
 except HTTPError as e:
     print(f"ERROR EN GEMINI (Codigo {e.code}):")
     print(e.read().decode("utf-8"))
+    exit(1)
+except Exception as e:
+    print("ERROR PROCESANDO JSON:", e)
+    print("Texto recibido de la IA:", raw_text)
     exit(1)
 
 # 2. Guardar en Supabase
