@@ -82,7 +82,7 @@
     
     <div class="publish-section">
       <h3>¿Qué has aprendido hoy?</h3>
-      <textarea id="conclusion-texto" rows="3" placeholder="Escribe aquí tu resumen o reflexión sobre el reto... (Mínimo 50 caracteres)"></textarea>
+      <textarea id="conclusion-texto" rows="3" placeholder="Escribe aquí tu resumen o reflexión sobre el reto..."></textarea>
       <button class="btn-primary" onclick="enviarConclusion()">Publicar conclusión</button>
       <p id="msg-publicacion" style="font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></p>
     </div>
@@ -170,18 +170,11 @@
       `;
     }
 
-    // MAGIA DE LAS ESTADÍSTICAS Y RACHAS CON FILTRO ANTI-SPAM
+    // MAGIA DE LAS ESTADÍSTICAS Y RACHAS
     async function enviarConclusion() {
       const texto = document.getElementById('conclusion-texto').value;
       const msgInfo = document.getElementById('msg-publicacion');
-      
-      // NUEVA REGLA: Mínimo 50 caracteres
-      const textoLimpio = texto.trim();
-      if (textoLimpio.length < 50) { 
-        msgInfo.innerText = "¡Muy corto! Escribe al menos 50 caracteres (llevas " + textoLimpio.length + ")."; 
-        msgInfo.style.color = "#ef4444"; 
-        return; 
-      }
+      if (!texto.trim()) { msgInfo.innerText = "¡Escribe algo primero!"; msgInfo.style.color = "#ef4444"; return; }
       
       msgInfo.innerText = "Publicando y actualizando perfil..."; 
       msgInfo.style.color = "#94a3b8";
@@ -206,10 +199,11 @@
           const ultimaInicio = new Date(ultima.getFullYear(), ultima.getMonth(), ultima.getDate()).getTime();
           const diasDiferencia = (hoyInicio - ultimaInicio) / (1000 * 60 * 60 * 24);
           
-          if (diasDiferencia === 1) nuevaRacha += 1; 
-          else if (diasDiferencia > 1) nuevaRacha = 1; 
+          if (diasDiferencia === 1) nuevaRacha += 1; // Un día después: sube la racha
+          else if (diasDiferencia > 1) nuevaRacha = 1; // Perdió días: vuelve a 1
+          // Si diasDiferencia es 0, publicó otra vez hoy, la racha se queda igual
         } else {
-          nuevaRacha = 1; 
+          nuevaRacha = 1; // Es su primera publicación
         }
         
         const nuevaMax = Math.max(perfil.racha_maxima || 0, nuevaRacha);
@@ -229,7 +223,7 @@
       document.getElementById('conclusion-texto').value = ""; 
       
       cargarFeed(); 
-      cargarPerfil(); 
+      cargarPerfil(); // Refrescar los números del dashboard
       setTimeout(() => msgInfo.innerText = "", 3000); 
     }
 
