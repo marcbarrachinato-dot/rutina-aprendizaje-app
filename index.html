@@ -7,8 +7,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 600px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+    body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 650px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); margin-bottom: 2rem; }
+    
     .tag { display: inline-block; background: #3b82f6; color: white; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px; margin-bottom: 1rem; }
     h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff; }
     p.desc { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
@@ -16,16 +17,27 @@
     .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
     .box-text { color: #e2e8f0; font-weight: 600; }
     
-    /* Estilos Login y Formularios */
+    /* Formularios */
     input, textarea { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; resize: vertical; }
-    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; }
+    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; transition: background 0.2s; }
+    button:hover { opacity: 0.9; }
     .btn-primary { background: #3b82f6; color: white; }
     .btn-secondary { background: #475569; color: white; }
-    .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1.5rem; }
+    .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1rem; }
     #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
     
+    /* Sección Publicar */
     .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
     .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+    
+    /* El Muro / Feed */
+    .feed-section { width: 100%; max-width: 650px; }
+    .feed-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: #f8fafc; padding-left: 0.5rem; }
+    .publicacion { background: #1e293b; border: 1px solid #334155; padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .pub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .pub-author { font-weight: bold; color: #3b82f6; font-size: 0.95rem; }
+    .pub-date { font-size: 0.75rem; color: #64748b; }
+    .pub-content { color: #cbd5e1; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -33,14 +45,11 @@
   <!-- PANTALLA DE LOGIN -->
   <div class="card" id="auth-container">
     <h1>Entrar al Reto</h1>
-    <p class="desc">Únete para mantener tu racha y publicar tus conclusiones.</p>
+    <p class="desc">Únete para mantener tu racha y debatir con la comunidad.</p>
     <p id="msg"></p>
     <input type="email" id="email" placeholder="Tu correo electrónico">
     <input type="password" id="password" placeholder="Tu contraseña">
-    
-    <!-- NUEVA CASILLA PARA EL NOMBRE -->
     <input type="text" id="username" placeholder="Nombre de usuario (Solo para registro)">
-    
     <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
@@ -51,12 +60,20 @@
     
     <div class="publish-section">
       <h3>¿Qué has aprendido hoy?</h3>
-      <textarea id="conclusion-texto" rows="4" placeholder="Escribe aquí tu resumen o reflexión sobre el reto..."></textarea>
+      <textarea id="conclusion-texto" rows="3" placeholder="Escribe aquí tu resumen o reflexión sobre el reto..."></textarea>
       <button class="btn-primary" onclick="enviarConclusion()">Publicar conclusión</button>
       <p id="msg-publicacion" style="font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></p>
     </div>
 
     <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <!-- EL MURO (FEED) -->
+  <div class="feed-section" id="feed-container" style="display: none;">
+    <h2 class="feed-title">Conclusiones de la comunidad</h2>
+    <div id="feed-content">
+      <!-- Aquí irán apareciendo las publicaciones -->
+    </div>
   </div>
 
   <script>
@@ -66,48 +83,33 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Detección de sesión
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('app-container').style.display = 'block';
+        document.getElementById('feed-container').style.display = 'block';
         cargarReto();
+        cargarFeed(); // Cargamos el muro al entrar
       } else {
         document.getElementById('auth-container').style.display = 'block';
         document.getElementById('app-container').style.display = 'none';
+        document.getElementById('feed-container').style.display = 'none';
       }
     });
 
-    // SISTEMA DE REGISTRO ACTUALIZADO
+    // Funciones de Auth (igual que antes)
     async function registro() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const username = document.getElementById('username').value;
       const msgInfo = document.getElementById('msg');
-
-      if (!username.trim()) {
-        msgInfo.innerText = "Por favor, escribe un nombre de usuario para registrarte.";
-        return;
-      }
-
-      // 1. Creamos la cuenta en Auth
+      if (!username.trim()) { msgInfo.innerText = "Escribe un nombre de usuario."; return; }
       const { data, error } = await clienteSupabase.auth.signUp({ email, password });
-      
-      if (error) {
-        msgInfo.innerText = error.message;
-        return;
-      }
-
-      // 2. Si se crea bien, guardamos su perfil en la tabla 'perfiles'
-      const { error: perfilError } = await clienteSupabase
-        .from('perfiles')
-        .insert([ { id: data.user.id, nombre_usuario: username, racha: 0 } ]);
-
-      if (perfilError) {
-        msgInfo.innerText = "Error al crear el perfil: " + perfilError.message;
-      } else {
-        msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión.";
-        msgInfo.style.color = "#22c55e"; // Verde
-      }
+      if (error) { msgInfo.innerText = error.message; return; }
+      const { error: perfilError } = await clienteSupabase.from('perfiles').insert([ { id: data.user.id, nombre_usuario: username, racha: 0 } ]);
+      if (perfilError) msgInfo.innerText = "Error: " + perfilError.message;
+      else { msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión."; msgInfo.style.color = "#22c55e"; }
     }
 
     async function login() {
@@ -117,9 +119,7 @@
       if (error) document.getElementById('msg').innerText = "Correo o contraseña incorrectos.";
     }
 
-    async function logout() {
-      await clienteSupabase.auth.signOut();
-    }
+    async function logout() { await clienteSupabase.auth.signOut(); }
 
     async function cargarReto() {
       const { data, error } = await clienteSupabase.from('retos').select('*').order('created_at', { ascending: false }).limit(1);
@@ -134,33 +134,56 @@
       `;
     }
 
+    // Función para enviar conclusión (ahora recarga el muro automáticamente)
     async function enviarConclusion() {
       const texto = document.getElementById('conclusion-texto').value;
       const msgInfo = document.getElementById('msg-publicacion');
+      if (!texto.trim()) { msgInfo.innerText = "¡Escribe algo primero!"; msgInfo.style.color = "#ef4444"; return; }
+      
+      msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#94a3b8";
+      const { data: { user } } = await clienteSupabase.auth.getUser();
 
-      if (!texto.trim()) {
-        msgInfo.innerText = "¡Escribe algo antes de publicar!";
-        msgInfo.style.color = "#ef4444";
+      const { error } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
+
+      if (error) { msgInfo.innerText = "Error: " + error.message; msgInfo.style.color = "#ef4444"; } 
+      else { 
+        msgInfo.innerText = "¡Publicado! 🎉"; msgInfo.style.color = "#22c55e"; 
+        document.getElementById('conclusion-texto').value = ""; 
+        cargarFeed(); // Refrescamos el muro al instante
+        setTimeout(() => msgInfo.innerText = "", 3000); // Limpiar mensaje a los 3s
+      }
+    }
+
+    // NUEVA FUNCIÓN: Descargar el muro de publicaciones
+    async function cargarFeed() {
+      const { data, error } = await clienteSupabase
+        .from('publicaciones')
+        .select('contenido, created_at, perfiles(nombre_usuario)')
+        .order('created_at', { ascending: false });
+
+      const feedContent = document.getElementById('feed-content');
+      feedContent.innerHTML = ""; // Limpiamos antes de cargar
+
+      if (error || !data || data.length === 0) {
+        feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>';
         return;
       }
 
-      msgInfo.innerText = "Publicando...";
-      msgInfo.style.color = "#94a3b8";
-
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-
-      const { error } = await clienteSupabase
-        .from('publicaciones')
-        .insert([ { contenido: texto, user_id: user.id } ]);
-
-      if (error) {
-        msgInfo.innerText = "Error al publicar: " + error.message;
-        msgInfo.style.color = "#ef4444";
-      } else {
-        msgInfo.innerText = "¡Conclusión publicada con éxito! 🎉";
-        msgInfo.style.color = "#22c55e";
-        document.getElementById('conclusion-texto').value = "";
-      }
+      // Dibujamos cada publicación
+      data.forEach(pub => {
+        const fecha = new Date(pub.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const nombre = pub.perfiles ? pub.perfiles.nombre_usuario : 'Usuario Anónimo';
+        
+        feedContent.innerHTML += `
+          <div class="publicacion">
+            <div class="pub-header">
+              <span class="pub-author">@${nombre}</span>
+              <span class="pub-date">${fecha}</span>
+            </div>
+            <div class="pub-content">${pub.contenido}</div>
+          </div>
+        `;
+      });
     }
   </script>
 </body>
