@@ -9,17 +9,23 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
     
+    /* Contenedores principales */
+    .top-bar { display: flex; justify-content: flex-end; width: 100%; max-width: 650px; margin-bottom: 1rem; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 650px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); margin-bottom: 2rem; }
     
-    /* Panel de Perfil */
-    .profile-section { background: #1e293b; border: 1px solid #3b82f6; border-radius: 1rem; max-width: 650px; width: 100%; padding: 1.5rem; margin-bottom: 2rem; display: none; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+    /* Perfil Compacto y Modal */
+    .compact-profile { background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; padding: 0.5rem 1rem; border-radius: 9999px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
+    .compact-profile:hover { background: #1e293b; }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 50; }
+    .profile-modal { background: #1e293b; border: 1px solid #3b82f6; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
     .profile-header { font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 1.5rem; text-align: center; }
-    .profile-stats { display: flex; gap: 0.75rem; justify-content: space-between; flex-wrap: wrap; }
-    .stat-box { background: #0f172a; padding: 1rem 0.5rem; border-radius: 0.75rem; flex: 1; min-width: 80px; text-align: center; border: 1px solid #334155; }
-    .stat-val { font-size: 1.5rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; }
-    .stat-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
-
-    /* Textos y Etiquetas */
+    .profile-stats { display: flex; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap; }
+    .stat-box { background: #0f172a; padding: 1rem 0.5rem; border-radius: 0.75rem; flex: 1; min-width: 70px; text-align: center; border: 1px solid #334155; }
+    .stat-val { font-size: 1.25rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+    
+    /* Textos del Reto */
     .tag { display: inline-block; background: #3b82f6; color: white; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px; margin-bottom: 1rem; }
     h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff; }
     p.desc { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
@@ -27,32 +33,40 @@
     .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
     .box-text { color: #e2e8f0; font-weight: 600; }
     
-    /* Formularios */
+    /* Formularios y Botones Generales */
     input, textarea { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; resize: vertical; }
-    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; transition: background 0.2s; }
+    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; transition: opacity 0.2s; }
     button:hover { opacity: 0.9; }
     .btn-primary { background: #3b82f6; color: white; }
     .btn-secondary { background: #475569; color: white; }
     .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1rem; }
     #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
     
-    /* Sección Publicar */
     .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
     .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
     
-    /* El Muro / Feed */
+    /* El Muro y Publicaciones */
     .feed-section { width: 100%; max-width: 650px; }
     .feed-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: #f8fafc; padding-left: 0.5rem; }
     .publicacion { background: #1e293b; border: 1px solid #334155; padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .pub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
     .pub-author { font-weight: bold; color: #3b82f6; font-size: 0.95rem; }
     .pub-date { font-size: 0.75rem; color: #64748b; }
-    .pub-content { color: #cbd5e1; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; }
+    .pub-content { color: #cbd5e1; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; margin-bottom: 1rem; }
     
-    /* Botones de Votar */
-    .pub-actions { display: flex; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.75rem; }
-    .btn-vote { flex: 1; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; color: #f8fafc; cursor: pointer; border-radius: 0.5rem; font-size: 1.1rem; margin-bottom: 0; }
+    .pub-actions { display: flex; gap: 0.5rem; border-top: 1px solid #334155; padding-top: 0.75rem; }
+    .btn-vote { flex: 1; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; color: #f8fafc; cursor: pointer; border-radius: 0.5rem; font-size: 0.9rem; margin-bottom: 0; }
     .btn-vote:hover { background: #334155; }
+    
+    /* Sección de Respuestas */
+    .respuestas-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #334155; }
+    .respuesta-item { background: #0f172a; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #cbd5e1; }
+    .respuesta-item b { color: #3b82f6; }
+    .respuesta-fecha { display: block; font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; }
+    
+    .reply-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .reply-input { flex: 1; padding: 0.5rem; margin-bottom: 0; font-size: 0.85rem; border-color: #334155; }
+    .btn-reply { width: auto; padding: 0.5rem 1rem; background: #475569; color: white; margin-bottom: 0; font-size: 0.85rem; }
   </style>
 </head>
 <body>
@@ -69,15 +83,26 @@
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
 
-  <!-- DASHBOARD DE PERFIL -->
-  <div class="profile-section" id="profile-section">
-    <div class="profile-header" id="prof-name">@usuario</div>
-    <div class="profile-stats">
-      <div class="stat-box"><div class="stat-val" id="prof-racha">0</div><div class="stat-label">🔥 Racha</div></div>
-      <div class="stat-box"><div class="stat-val" id="prof-max">0</div><div class="stat-label">🏆 Máxima</div></div>
-      <div class="stat-box"><div class="stat-val" id="prof-pubs">0</div><div class="stat-label">📝 Aportes</div></div>
-      <div class="stat-box"><div class="stat-val" id="prof-likes">0</div><div class="stat-label">👍 Likes</div></div>
-      <div class="stat-box"><div class="stat-val" id="prof-dislikes">0</div><div class="stat-label">👎 Dislikes</div></div>
+  <!-- BARRA SUPERIOR Y PERFIL COMPACTO -->
+  <div class="top-bar" id="top-bar" style="display: none;">
+    <button class="compact-profile" onclick="abrirModal()">
+      <span id="compact-racha">🔥 0</span> | <span id="compact-nombre">@usuario</span>
+    </button>
+  </div>
+
+  <!-- VENTANA FLOTANTE DEL PERFIL (MODAL) -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="profile-modal">
+      <div class="profile-header" id="prof-name">@usuario</div>
+      <div class="profile-stats">
+        <div class="stat-box"><div class="stat-val" id="prof-racha">0</div><div class="stat-label">🔥 Racha</div></div>
+        <div class="stat-box"><div class="stat-val" id="prof-max">0</div><div class="stat-label">🏆 Máxima</div></div>
+        <div class="stat-box"><div class="stat-val" id="prof-pubs">0</div><div class="stat-label">📝 Aportes</div></div>
+        <div class="stat-box"><div class="stat-val" id="prof-likes">0</div><div class="stat-label">👍 Likes</div></div>
+        <div class="stat-box"><div class="stat-val" id="prof-dislikes">0</div><div class="stat-label">👎 Dislikes</div></div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+      <button class="btn-secondary" style="margin-top: 0.5rem;" onclick="cerrarModal()">Volver al muro</button>
     </div>
   </div>
 
@@ -91,8 +116,6 @@
       <button class="btn-primary" onclick="enviarConclusion()">Publicar conclusión</button>
       <p id="msg-publicacion" style="font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></p>
     </div>
-
-    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
   </div>
 
   <!-- EL MURO (FEED) -->
@@ -108,34 +131,44 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Detección de sesión
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('profile-section').style.display = 'block';
+        document.getElementById('top-bar').style.display = 'flex';
         document.getElementById('app-container').style.display = 'block';
         document.getElementById('feed-container').style.display = 'block';
-        cargarPerfil();
-        cargarReto();
-        cargarFeed();
+        cargarPerfil(); cargarReto(); cargarFeed();
       } else {
         document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('profile-section').style.display = 'none';
+        document.getElementById('top-bar').style.display = 'none';
         document.getElementById('app-container').style.display = 'none';
         document.getElementById('feed-container').style.display = 'none';
+        cerrarModal();
       }
     });
 
+    // Control del Modal del Perfil
+    function abrirModal() { document.getElementById('profile-modal').style.display = 'flex'; }
+    function cerrarModal() { document.getElementById('profile-modal').style.display = 'none'; }
+
+    // Carga de Perfil Actualizada para el botón compacto
     async function cargarPerfil() {
       const { data: { user } } = await clienteSupabase.auth.getUser();
       if (!user) return;
       const { data, error } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
       if (data) {
+        // Llenar el modal interior
         document.getElementById('prof-name').innerText = '@' + data.nombre_usuario;
         document.getElementById('prof-racha').innerText = data.racha || 0;
         document.getElementById('prof-max').innerText = data.racha_maxima || 0;
         document.getElementById('prof-pubs').innerText = data.total_publicaciones || 0;
         document.getElementById('prof-likes').innerText = data.likes_recibidos || 0;
         document.getElementById('prof-dislikes').innerText = data.dislikes_recibidos || 0;
+        
+        // Llenar el botón compacto
+        document.getElementById('compact-racha').innerText = '🔥 ' + (data.racha || 0);
+        document.getElementById('compact-nombre').innerText = '@' + data.nombre_usuario;
       }
     }
 
@@ -180,9 +213,7 @@
       const textoLimpio = texto.trim();
       
       if (textoLimpio.length < 50) { 
-        msgInfo.innerText = "¡Muy corto! Escribe al menos 50 caracteres (llevas " + textoLimpio.length + ")."; 
-        msgInfo.style.color = "#ef4444"; 
-        return; 
+        msgInfo.innerText = "¡Muy corto! Escribe al menos 50 caracteres (llevas " + textoLimpio.length + ")."; msgInfo.style.color = "#ef4444"; return; 
       }
       
       msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#94a3b8";
@@ -192,7 +223,6 @@
       if (pubError) { msgInfo.innerText = "Error: " + pubError.message; msgInfo.style.color = "#ef4444"; return; }
 
       const { data: perfil } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
-      
       if (perfil) {
         const ahora = new Date();
         const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()).getTime();
@@ -202,7 +232,6 @@
           const ultima = new Date(perfil.ultima_publicacion);
           const ultimaInicio = new Date(ultima.getFullYear(), ultima.getMonth(), ultima.getDate()).getTime();
           const diasDiferencia = (hoyInicio - ultimaInicio) / (1000 * 60 * 60 * 24);
-          
           if (diasDiferencia === 1) nuevaRacha += 1; 
           else if (diasDiferencia > 1) nuevaRacha = 1; 
         } else { nuevaRacha = 1; }
@@ -217,72 +246,104 @@
 
       msgInfo.innerText = "¡Publicado! 🎉"; msgInfo.style.color = "#22c55e"; 
       document.getElementById('conclusion-texto').value = ""; 
-      cargarFeed(); cargarPerfil(); 
-      setTimeout(() => msgInfo.innerText = "", 3000); 
+      cargarFeed(); cargarPerfil(); setTimeout(() => msgInfo.innerText = "", 3000); 
     }
 
-    // NUEVO: Función para votar
     async function votar(pubId, autorId, tipo) {
       const { data: { user } } = await clienteSupabase.auth.getUser();
       if (!user) return alert("Inicia sesión para votar.");
 
-      // 1. Mirar si ya había votado a esta publicación
-      const { data: votoPrevio } = await clienteSupabase
-        .from('votos')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('publicacion_id', pubId)
-        .single();
+      const { data: votoPrevio } = await clienteSupabase.from('votos').select('*').eq('user_id', user.id).eq('publicacion_id', pubId).single();
+      if (votoPrevio) { alert("Ya has votado en esta publicación."); return; }
 
-      if (votoPrevio) {
-        alert("Ya has votado en esta publicación.");
-        return;
-      }
-
-      // 2. Registrar el nuevo voto
       await clienteSupabase.from('votos').insert([ { user_id: user.id, publicacion_id: pubId, tipo: tipo } ]);
 
-      // 3. Sumar el punto al perfil del autor
       const { data: autor } = await clienteSupabase.from('perfiles').select('*').eq('id', autorId).single();
       if (autor) {
-        if (tipo === 'like') {
-          await clienteSupabase.from('perfiles').update({ likes_recibidos: (autor.likes_recibidos || 0) + 1 }).eq('id', autorId);
-        } else {
-          await clienteSupabase.from('perfiles').update({ dislikes_recibidos: (autor.dislikes_recibidos || 0) + 1 }).eq('id', autorId);
-        }
+        if (tipo === 'like') await clienteSupabase.from('perfiles').update({ likes_recibidos: (autor.likes_recibidos || 0) + 1 }).eq('id', autorId);
+        else await clienteSupabase.from('perfiles').update({ dislikes_recibidos: (autor.dislikes_recibidos || 0) + 1 }).eq('id', autorId);
       }
-      
-      cargarPerfil(); // Actualiza tu dashboard al instante por si te has votado a ti mismo
-      alert("¡Voto registrado!");
+      cargarPerfil(); alert("¡Voto registrado!");
     }
 
+    // NUEVO: Función para enviar respuesta
+    async function enviarRespuesta(pubId) {
+      const inputId = 'reply-input-' + pubId;
+      const texto = document.getElementById(inputId).value.trim();
+      
+      if (!texto) return alert("Escribe algo para responder.");
+      
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      
+      const { error } = await clienteSupabase.from('respuestas').insert([ { contenido: texto, user_id: user.id, publicacion_id: pubId } ]);
+      
+      if (error) { alert("Error al responder: " + error.message); } 
+      else { cargarFeed(); } // Recargar muro para ver la respuesta
+    }
+
+    // ACTUALIZADO: Cargar Feed ahora también trae las respuestas
     async function cargarFeed() {
-      // Ahora pedimos también el id de la publicación y el user_id del autor para que funcionen los botones
-      const { data, error } = await clienteSupabase.from('publicaciones').select('id, user_id, contenido, created_at, perfiles(nombre_usuario)').order('created_at', { ascending: false });
+      const { data, error } = await clienteSupabase
+        .from('publicaciones')
+        .select(`
+          id, user_id, contenido, created_at, 
+          perfiles(nombre_usuario),
+          respuestas(contenido, created_at, perfiles(nombre_usuario))
+        `)
+        .order('created_at', { ascending: false });
+        
       const feedContent = document.getElementById('feed-content');
       feedContent.innerHTML = "";
       
       if (error || !data || data.length === 0) { 
-        feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>'; 
-        return; 
+        feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>'; return; 
       }
       
       data.forEach(pub => {
         const fecha = new Date(pub.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        const nombre = pub.perfiles ? pub.perfiles.nombre_usuario : 'Usuario Anónimo';
+        const nombre = pub.perfiles ? pub.perfiles.nombre_usuario : 'Anónimo';
         
-        feedContent.innerHTML += `
+        // Bloque de html base de la publicación
+        let htmlCard = `
           <div class="publicacion">
             <div class="pub-header"><span class="pub-author">@${nombre}</span><span class="pub-date">${fecha}</span></div>
             <div class="pub-content">${pub.contenido}</div>
             
-            <!-- NUEVO: Botones de Voto -->
             <div class="pub-actions">
               <button class="btn-vote" onclick="votar(${pub.id}, '${pub.user_id}', 'like')">👍 Me gusta</button>
               <button class="btn-vote" onclick="votar(${pub.id}, '${pub.user_id}', 'dislike')">👎 No me gusta</button>
             </div>
+            
+            <div class="respuestas-section">
+        `;
+        
+        // Renderizar las respuestas si existen
+        if (pub.respuestas && pub.respuestas.length > 0) {
+          // Ordenamos las respuestas de más antigua a más nueva para leerlas bien
+          pub.respuestas.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          
+          pub.respuestas.forEach(resp => {
+            const fechaResp = new Date(resp.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            htmlCard += `
+              <div class="respuesta-item">
+                <b>@${resp.perfiles.nombre_usuario}</b>: ${resp.contenido}
+                <span class="respuesta-fecha">${fechaResp}</span>
+              </div>
+            `;
+          });
+        }
+        
+        // Formulario para añadir nueva respuesta
+        htmlCard += `
+              <div class="reply-form">
+                <input type="text" id="reply-input-${pub.id}" class="reply-input" placeholder="Escribe una respuesta...">
+                <button class="btn-reply" onclick="enviarRespuesta(${pub.id})">Responder</button>
+              </div>
+            </div>
           </div>
         `;
+        
+        feedContent.innerHTML += htmlCard;
       });
     }
   </script>
