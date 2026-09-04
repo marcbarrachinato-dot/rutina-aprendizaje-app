@@ -64,7 +64,7 @@
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
 
-  <!-- DASHBOARD DE PERFIL (NUEVO) -->
+  <!-- DASHBOARD DE PERFIL -->
   <div class="profile-section" id="profile-section">
     <div class="profile-header" id="prof-name">@usuario</div>
     <div class="profile-stats">
@@ -103,14 +103,13 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Detección de sesión (Actualizada)
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('profile-section').style.display = 'block';
         document.getElementById('app-container').style.display = 'block';
         document.getElementById('feed-container').style.display = 'block';
-        cargarPerfil(); // NUEVO: Carga tus estadísticas
+        cargarPerfil();
         cargarReto();
         cargarFeed();
       } else {
@@ -121,17 +120,10 @@
       }
     });
 
-    // NUEVA FUNCIÓN: Cargar los datos del perfil
     async function cargarPerfil() {
       const { data: { user } } = await clienteSupabase.auth.getUser();
       if (!user) return;
-
-      const { data, error } = await clienteSupabase
-        .from('perfiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
+      const { data, error } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
       if (data) {
         document.getElementById('prof-name').innerText = '@' + data.nombre_usuario;
         document.getElementById('prof-racha').innerText = data.racha || 0;
@@ -142,7 +134,6 @@
       }
     }
 
-    // Funciones de Auth
     async function registro() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
@@ -178,22 +169,61 @@
       `;
     }
 
+    // MAGIA DE LAS ESTADÍSTICAS Y RACHAS
     async function enviarConclusion() {
       const texto = document.getElementById('conclusion-texto').value;
       const msgInfo = document.getElementById('msg-publicacion');
       if (!texto.trim()) { msgInfo.innerText = "¡Escribe algo primero!"; msgInfo.style.color = "#ef4444"; return; }
       
-      msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#94a3b8";
+      msgInfo.innerText = "Publicando y actualizando perfil..."; 
+      msgInfo.style.color = "#94a3b8";
+      
       const { data: { user } } = await clienteSupabase.auth.getUser();
-      const { error } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
 
-      if (error) { msgInfo.innerText = "Error: " + error.message; msgInfo.style.color = "#ef4444"; } 
-      else { 
-        msgInfo.innerText = "¡Publicado! 🎉"; msgInfo.style.color = "#22c55e"; 
-        document.getElementById('conclusion-texto').value = ""; 
-        cargarFeed(); 
-        setTimeout(() => msgInfo.innerText = "", 3000); 
+      // 1. Guardar publicación
+      const { error: pubError } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
+      if (pubError) { msgInfo.innerText = "Error: " + pubError.message; msgInfo.style.color = "#ef4444"; return; }
+
+      // 2. Traer el perfil para calcular rachas
+      const { data: perfil } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
+      
+      if (perfil) {
+        const ahora = new Date();
+        const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()).getTime();
+        
+        let nuevaRacha = perfil.racha || 0;
+        
+        if (perfil.ultima_publicacion) {
+          const ultima = new Date(perfil.ultima_publicacion);
+          const ultimaInicio = new Date(ultima.getFullYear(), ultima.getMonth(), ultima.getDate()).getTime();
+          const diasDiferencia = (hoyInicio - ultimaInicio) / (1000 * 60 * 60 * 24);
+          
+          if (diasDiferencia === 1) nuevaRacha += 1; // Un día después: sube la racha
+          else if (diasDiferencia > 1) nuevaRacha = 1; // Perdió días: vuelve a 1
+          // Si diasDiferencia es 0, publicó otra vez hoy, la racha se queda igual
+        } else {
+          nuevaRacha = 1; // Es su primera publicación
+        }
+        
+        const nuevaMax = Math.max(perfil.racha_maxima || 0, nuevaRacha);
+        const nuevoTotal = (perfil.total_publicaciones || 0) + 1;
+        
+        // 3. Actualizar perfil en Supabase
+        await clienteSupabase.from('perfiles').update({
+          racha: nuevaRacha,
+          racha_maxima: nuevaMax,
+          total_publicaciones: nuevoTotal,
+          ultima_publicacion: ahora.toISOString()
+        }).eq('id', user.id);
       }
+
+      msgInfo.innerText = "¡Publicado! 🎉"; 
+      msgInfo.style.color = "#22c55e"; 
+      document.getElementById('conclusion-texto').value = ""; 
+      
+      cargarFeed(); 
+      cargarPerfil(); // Refrescar los números del dashboard
+      setTimeout(() => msgInfo.innerText = "", 3000); 
     }
 
     async function cargarFeed() {
