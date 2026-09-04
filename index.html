@@ -232,7 +232,7 @@
       msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#78716c";
       const { data: { user } } = await clienteSupabase.auth.getUser();
 
-      const { error: pubError } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
+      const { error: pubError } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id, reto_id: retoActivoId } ]);
       if (pubError) { msgInfo.innerText = "Error: " + pubError.message; msgInfo.style.color = "#dc2626"; return; }
 
       const { data: perfil } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
