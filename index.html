@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reto de Aprendizaje Diario</title>
+  <title>Reto de Aprendizaje - 1 Hora al Día</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -25,38 +25,47 @@
   </div>
 
   <script>
-    // SUSTITUYE ESTOS DOS VALORES CON TUS CLAVES DE SUPABASE
-    const SUPABASE_URL = "https://seklglwsenfsefkjmotf.supabase.co"; 
-    const SUPABASE_ANON_KEY = "sb_publishable_0Fza03ndiV9l0XPGPr9m9A_erhuMq3H
-"; 
+    // 1. PON TUS CLAVES AQUÍ OTRA VEZ
+    const SUPABASE_URL = "TU_SUPABASE_URL_AQUI"; 
+    const SUPABASE_ANON_KEY = "TU_PUBLISHABLE_KEY_AQUI"; 
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // SOLUCIÓN: Cambiamos el nombre para que el navegador no colapse
+    const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function cargarReto() {
-      const { data, error } = await supabase
-        .from('retos')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(1);
+      try {
+        const { data, error } = await clienteSupabase
+          .from('retos')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(1);
 
-      const app = document.getElementById('app');
+        const app = document.getElementById('app');
 
-      if (error || !data || data.length === 0) {
-        app.innerHTML = '<h1>Aún no hay retos disponibles</h1><p class="desc">Vuelve más tarde.</p>';
-        return;
+        if (error) {
+          app.innerHTML = `<h1>Error de base de datos</h1><p class="desc">${error.message}</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          app.innerHTML = '<h1>Aún no hay retos disponibles</h1><p class="desc">Vuelve más tarde o revisa tu base de datos.</p>';
+          return;
+        }
+
+        const reto = data[0];
+        app.innerHTML = `
+          <span class="tag">${reto.categoria || 'General'}</span>
+          <h1>${reto.titulo}</h1>
+          <p class="desc">${reto.descripcion}</p>
+          <div class="box">
+            <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
+            <div class="box-text">${reto.pregunta_clave}</div>
+          </div>
+          <div class="timer">⏱️ Dedícale 1 hora hoy a investigar este tema.</div>
+        `;
+      } catch (err) {
+        document.getElementById('app').innerHTML = '<h1>Error de conexión</h1><p class="desc">Hubo un problema al cargar los datos.</p>';
       }
-
-      const reto = data[0];
-      app.innerHTML = `
-        <span class="tag">${reto.categoria || 'General'}</span>
-        <h1>${reto.titulo}</h1>
-        <p class="desc">${reto.descripcion}</p>
-        <div class="box">
-          <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
-          <div class="box-text">${reto.pregunta_clave}</div>
-        </div>
-        <div class="timer">⏱️ Dedícale 1 hora hoy a investigar este tema.</div>
-      `;
     }
 
     cargarReto();
