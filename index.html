@@ -25,11 +25,9 @@
   </div>
 
   <script>
-    // 1. PON TUS CLAVES AQUÍ OTRA VEZ
     const SUPABASE_URL = "https://seklglwsenfsefkjmotf.supabase.co"; 
-    const SUPABASE_ANON_KEY = "sb_publishable_0Fza03ndiV9l0XPGPr9m9A_erhuMq3H"; 
+    const SUPABASE_ANON_KEY = "TU_PUBLISHABLE_KEY_AQUI"; 
 
-    // SOLUCIÓN: Cambiamos el nombre para que el navegador no colapse
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function cargarReto() {
@@ -37,7 +35,7 @@
         const { data, error } = await clienteSupabase
           .from('retos')
           .select('*')
-          .order('id', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(1);
 
         const app = document.getElementById('app');
