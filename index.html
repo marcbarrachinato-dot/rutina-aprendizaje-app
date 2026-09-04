@@ -35,7 +35,6 @@
         const { data, error } = await clienteSupabase
           .from('retos')
           .select('*')
-          .order('created_at', { ascending: false })
           .limit(1);
 
         const app = document.getElementById('app');
