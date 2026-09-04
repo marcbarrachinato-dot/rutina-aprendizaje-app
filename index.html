@@ -8,8 +8,18 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 650px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); margin-bottom: 2rem; }
     
+    /* Panel de Perfil */
+    .profile-section { background: #1e293b; border: 1px solid #3b82f6; border-radius: 1rem; max-width: 650px; width: 100%; padding: 1.5rem; margin-bottom: 2rem; display: none; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+    .profile-header { font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 1.5rem; text-align: center; }
+    .profile-stats { display: flex; gap: 0.75rem; justify-content: space-between; flex-wrap: wrap; }
+    .stat-box { background: #0f172a; padding: 1rem 0.5rem; border-radius: 0.75rem; flex: 1; min-width: 80px; text-align: center; border: 1px solid #334155; }
+    .stat-val { font-size: 1.5rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+
+    /* Textos y Etiquetas */
     .tag { display: inline-block; background: #3b82f6; color: white; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px; margin-bottom: 1rem; }
     h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff; }
     p.desc { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
@@ -54,6 +64,18 @@
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
 
+  <!-- DASHBOARD DE PERFIL (NUEVO) -->
+  <div class="profile-section" id="profile-section">
+    <div class="profile-header" id="prof-name">@usuario</div>
+    <div class="profile-stats">
+      <div class="stat-box"><div class="stat-val" id="prof-racha">0</div><div class="stat-label">🔥 Racha</div></div>
+      <div class="stat-box"><div class="stat-val" id="prof-max">0</div><div class="stat-label">🏆 Máxima</div></div>
+      <div class="stat-box"><div class="stat-val" id="prof-pubs">0</div><div class="stat-label">📝 Aportes</div></div>
+      <div class="stat-box"><div class="stat-val" id="prof-likes">0</div><div class="stat-label">👍 Likes</div></div>
+      <div class="stat-box"><div class="stat-val" id="prof-dislikes">0</div><div class="stat-label">👎 Dislikes</div></div>
+    </div>
+  </div>
+
   <!-- PANTALLA DEL RETO Y PUBLICACIÓN -->
   <div class="card" id="app-container" style="display: none;">
     <div id="reto-content">Cargando el reto...</div>
@@ -71,9 +93,7 @@
   <!-- EL MURO (FEED) -->
   <div class="feed-section" id="feed-container" style="display: none;">
     <h2 class="feed-title">Conclusiones de la comunidad</h2>
-    <div id="feed-content">
-      <!-- Aquí irán apareciendo las publicaciones -->
-    </div>
+    <div id="feed-content"></div>
   </div>
 
   <script>
@@ -83,22 +103,46 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Detección de sesión
+    // Detección de sesión (Actualizada)
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('profile-section').style.display = 'block';
         document.getElementById('app-container').style.display = 'block';
         document.getElementById('feed-container').style.display = 'block';
+        cargarPerfil(); // NUEVO: Carga tus estadísticas
         cargarReto();
-        cargarFeed(); // Cargamos el muro al entrar
+        cargarFeed();
       } else {
         document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('profile-section').style.display = 'none';
         document.getElementById('app-container').style.display = 'none';
         document.getElementById('feed-container').style.display = 'none';
       }
     });
 
-    // Funciones de Auth (igual que antes)
+    // NUEVA FUNCIÓN: Cargar los datos del perfil
+    async function cargarPerfil() {
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await clienteSupabase
+        .from('perfiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (data) {
+        document.getElementById('prof-name').innerText = '@' + data.nombre_usuario;
+        document.getElementById('prof-racha').innerText = data.racha || 0;
+        document.getElementById('prof-max').innerText = data.racha_maxima || 0;
+        document.getElementById('prof-pubs').innerText = data.total_publicaciones || 0;
+        document.getElementById('prof-likes').innerText = data.likes_recibidos || 0;
+        document.getElementById('prof-dislikes').innerText = data.dislikes_recibidos || 0;
+      }
+    }
+
+    // Funciones de Auth
     async function registro() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
@@ -107,7 +151,7 @@
       if (!username.trim()) { msgInfo.innerText = "Escribe un nombre de usuario."; return; }
       const { data, error } = await clienteSupabase.auth.signUp({ email, password });
       if (error) { msgInfo.innerText = error.message; return; }
-      const { error: perfilError } = await clienteSupabase.from('perfiles').insert([ { id: data.user.id, nombre_usuario: username, racha: 0 } ]);
+      const { error: perfilError } = await clienteSupabase.from('perfiles').insert([ { id: data.user.id, nombre_usuario: username, racha: 0, racha_maxima: 0, total_publicaciones: 0, likes_recibidos: 0, dislikes_recibidos: 0 } ]);
       if (perfilError) msgInfo.innerText = "Error: " + perfilError.message;
       else { msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión."; msgInfo.style.color = "#22c55e"; }
     }
@@ -134,7 +178,6 @@
       `;
     }
 
-    // Función para enviar conclusión (ahora recarga el muro automáticamente)
     async function enviarConclusion() {
       const texto = document.getElementById('conclusion-texto').value;
       const msgInfo = document.getElementById('msg-publicacion');
@@ -142,44 +185,29 @@
       
       msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#94a3b8";
       const { data: { user } } = await clienteSupabase.auth.getUser();
-
       const { error } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
 
       if (error) { msgInfo.innerText = "Error: " + error.message; msgInfo.style.color = "#ef4444"; } 
       else { 
         msgInfo.innerText = "¡Publicado! 🎉"; msgInfo.style.color = "#22c55e"; 
         document.getElementById('conclusion-texto').value = ""; 
-        cargarFeed(); // Refrescamos el muro al instante
-        setTimeout(() => msgInfo.innerText = "", 3000); // Limpiar mensaje a los 3s
+        cargarFeed(); 
+        setTimeout(() => msgInfo.innerText = "", 3000); 
       }
     }
 
-    // NUEVA FUNCIÓN: Descargar el muro de publicaciones
     async function cargarFeed() {
-      const { data, error } = await clienteSupabase
-        .from('publicaciones')
-        .select('contenido, created_at, perfiles(nombre_usuario)')
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await clienteSupabase.from('publicaciones').select('contenido, created_at, perfiles(nombre_usuario)').order('created_at', { ascending: false });
       const feedContent = document.getElementById('feed-content');
-      feedContent.innerHTML = ""; // Limpiamos antes de cargar
-
-      if (error || !data || data.length === 0) {
-        feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>';
-        return;
-      }
-
-      // Dibujamos cada publicación
+      feedContent.innerHTML = "";
+      if (error || !data || data.length === 0) { feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>'; return; }
+      
       data.forEach(pub => {
         const fecha = new Date(pub.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
         const nombre = pub.perfiles ? pub.perfiles.nombre_usuario : 'Usuario Anónimo';
-        
         feedContent.innerHTML += `
           <div class="publicacion">
-            <div class="pub-header">
-              <span class="pub-author">@${nombre}</span>
-              <span class="pub-date">${fecha}</span>
-            </div>
+            <div class="pub-header"><span class="pub-author">@${nombre}</span><span class="pub-date">${fecha}</span></div>
             <div class="pub-content">${pub.contenido}</div>
           </div>
         `;
