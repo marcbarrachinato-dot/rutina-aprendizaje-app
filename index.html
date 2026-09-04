@@ -24,7 +24,6 @@
     .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1.5rem; }
     #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
     
-    /* Estilos nueva sección de publicación */
     .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
     .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
   </style>
@@ -38,6 +37,10 @@
     <p id="msg"></p>
     <input type="email" id="email" placeholder="Tu correo electrónico">
     <input type="password" id="password" placeholder="Tu contraseña">
+    
+    <!-- NUEVA CASILLA PARA EL NOMBRE -->
+    <input type="text" id="username" placeholder="Nombre de usuario (Solo para registro)">
+    
     <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
@@ -46,7 +49,6 @@
   <div class="card" id="app-container" style="display: none;">
     <div id="reto-content">Cargando el reto...</div>
     
-    <!-- NUEVA CAJA PARA ESCRIBIR LA CONCLUSIÓN -->
     <div class="publish-section">
       <h3>¿Qué has aprendido hoy?</h3>
       <textarea id="conclusion-texto" rows="4" placeholder="Escribe aquí tu resumen o reflexión sobre el reto..."></textarea>
@@ -64,7 +66,6 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Sistema de Cambio de Pantallas
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
@@ -76,13 +77,37 @@
       }
     });
 
-    // Funciones de Usuario (Login/Registro)
+    // SISTEMA DE REGISTRO ACTUALIZADO
     async function registro() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await clienteSupabase.auth.signUp({ email, password });
-      if (error) document.getElementById('msg').innerText = error.message;
-      else document.getElementById('msg').innerText = "¡Cuenta creada! Ya puedes iniciar sesión.";
+      const username = document.getElementById('username').value;
+      const msgInfo = document.getElementById('msg');
+
+      if (!username.trim()) {
+        msgInfo.innerText = "Por favor, escribe un nombre de usuario para registrarte.";
+        return;
+      }
+
+      // 1. Creamos la cuenta en Auth
+      const { data, error } = await clienteSupabase.auth.signUp({ email, password });
+      
+      if (error) {
+        msgInfo.innerText = error.message;
+        return;
+      }
+
+      // 2. Si se crea bien, guardamos su perfil en la tabla 'perfiles'
+      const { error: perfilError } = await clienteSupabase
+        .from('perfiles')
+        .insert([ { id: data.user.id, nombre_usuario: username, racha: 0 } ]);
+
+      if (perfilError) {
+        msgInfo.innerText = "Error al crear el perfil: " + perfilError.message;
+      } else {
+        msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión.";
+        msgInfo.style.color = "#22c55e"; // Verde
+      }
     }
 
     async function login() {
@@ -96,7 +121,6 @@
       await clienteSupabase.auth.signOut();
     }
 
-    // Cargar el reto
     async function cargarReto() {
       const { data, error } = await clienteSupabase.from('retos').select('*').order('created_at', { ascending: false }).limit(1);
       const content = document.getElementById('reto-content');
@@ -110,35 +134,32 @@
       `;
     }
 
-    // NUEVA FUNCIÓN: Enviar la conclusión a Supabase
     async function enviarConclusion() {
       const texto = document.getElementById('conclusion-texto').value;
       const msgInfo = document.getElementById('msg-publicacion');
 
       if (!texto.trim()) {
         msgInfo.innerText = "¡Escribe algo antes de publicar!";
-        msgInfo.style.color = "#ef4444"; // Rojo
+        msgInfo.style.color = "#ef4444";
         return;
       }
 
       msgInfo.innerText = "Publicando...";
-      msgInfo.style.color = "#94a3b8"; // Gris
+      msgInfo.style.color = "#94a3b8";
 
-      // Obtenemos el usuario actual
       const { data: { user } } = await clienteSupabase.auth.getUser();
 
-      // Enviamos el texto y el ID del usuario a la tabla
       const { error } = await clienteSupabase
         .from('publicaciones')
         .insert([ { contenido: texto, user_id: user.id } ]);
 
       if (error) {
         msgInfo.innerText = "Error al publicar: " + error.message;
-        msgInfo.style.color = "#ef4444"; // Rojo
+        msgInfo.style.color = "#ef4444";
       } else {
         msgInfo.innerText = "¡Conclusión publicada con éxito! 🎉";
-        msgInfo.style.color = "#22c55e"; // Verde
-        document.getElementById('conclusion-texto').value = ""; // Limpiamos la caja
+        msgInfo.style.color = "#22c55e";
+        document.getElementById('conclusion-texto').value = "";
       }
     }
   </script>
