@@ -15,58 +15,95 @@
     .box { background: #0f172a; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
     .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
     .box-text { color: #e2e8f0; font-weight: 600; }
-    .timer { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 1rem; }
+    
+    /* Estilos nuevos para el Login */
+    input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; }
+    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-secondary { background: #475569; color: white; }
+    .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1.5rem; }
+    #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
   </style>
 </head>
 <body>
 
-  <div class="card" id="app">
-    <p>Cargando el reto del día...</p>
+  <!-- PANTALLA DE LOGIN (Se oculta si estás logueado) -->
+  <div class="card" id="auth-container">
+    <h1>Entrar al Reto</h1>
+    <p class="desc">Únete para mantener tu racha y publicar tus conclusiones.</p>
+    <p id="msg"></p>
+    <input type="email" id="email" placeholder="Tu correo electrónico">
+    <input type="password" id="password" placeholder="Tu contraseña">
+    <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
+    <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
+  </div>
+
+  <!-- PANTALLA DEL RETO (Se oculta si NO estás logueado) -->
+  <div class="card" id="app-container" style="display: none;">
+    <div id="reto-content">Cargando el reto...</div>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
   </div>
 
   <script>
+    // TUS CLAVES AQUÍ
     const SUPABASE_URL = "https://seklglwsenfsefkjmotf.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_0Fza03ndiV9l0XPGPr9m9A_erhuMq3H"; 
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function cargarReto() {
-      try {
-        const { data, error } = await clienteSupabase
-          .from('retos')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        const app = document.getElementById('app');
-
-        if (error) {
-          app.innerHTML = `<h1>Error de base de datos</h1><p class="desc">${error.message}</p>`;
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          app.innerHTML = '<h1>Aún no hay retos disponibles</h1><p class="desc">Vuelve más tarde o revisa tu base de datos.</p>';
-          return;
-        }
-
-        const reto = data[0];
-        app.innerHTML = `
-          <span class="tag">${reto.categoria || 'General'}</span>
-          <h1>${reto.titulo}</h1>
-          <p class="desc">${reto.descripcion}</p>
-          <div class="box">
-            <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
-            <div class="box-text">${reto.pregunta_clave}</div>
-          </div>
-          <div class="timer">⏱️ Dedícale 1 hora hoy a investigar este tema.</div>
-        `;
-      } catch (err) {
-        document.getElementById('app').innerHTML = '<h1>Error de conexión</h1><p class="desc">Hubo un problema al cargar los datos.</p>';
+    // Sistema de Cambio de Pantallas
+    clienteSupabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+        cargarReto();
+      } else {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('app-container').style.display = 'none';
       }
+    });
+
+    // Funciones de Usuario
+    async function registro() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await clienteSupabase.auth.signUp({ email, password });
+      if (error) document.getElementById('msg').innerText = error.message;
+      else document.getElementById('msg').innerText = "¡Cuenta creada! Ya puedes iniciar sesión.";
     }
 
-    cargarReto();
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await clienteSupabase.auth.signInWithPassword({ email, password });
+      if (error) document.getElementById('msg').innerText = "Correo o contraseña incorrectos.";
+    }
+
+    async function logout() {
+      await clienteSupabase.auth.signOut();
+    }
+
+    // Cargar el reto
+    async function cargarReto() {
+      const { data, error } = await clienteSupabase.from('retos').select('*').order('created_at', { ascending: false }).limit(1);
+      const content = document.getElementById('reto-content');
+
+      if (!data || data.length === 0) {
+        content.innerHTML = '<h1>Aún no hay retos disponibles</h1>';
+        return;
+      }
+
+      const reto = data[0];
+      content.innerHTML = `
+        <span class="tag">${reto.categoria || 'General'}</span>
+        <h1>${reto.titulo}</h1>
+        <p class="desc">${reto.descripcion}</p>
+        <div class="box">
+          <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
+          <div class="box-text">${reto.pregunta_clave}</div>
+        </div>
+      `;
+    }
   </script>
 </body>
 </html>
