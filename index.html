@@ -16,18 +16,22 @@
     .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
     .box-text { color: #e2e8f0; font-weight: 600; }
     
-    /* Estilos nuevos para el Login */
-    input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; }
+    /* Estilos Login y Formularios */
+    input, textarea { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; resize: vertical; }
     button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; }
     .btn-primary { background: #3b82f6; color: white; }
     .btn-secondary { background: #475569; color: white; }
     .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1.5rem; }
     #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
+    
+    /* Estilos nueva sección de publicación */
+    .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
+    .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
   </style>
 </head>
 <body>
 
-  <!-- PANTALLA DE LOGIN (Se oculta si estás logueado) -->
+  <!-- PANTALLA DE LOGIN -->
   <div class="card" id="auth-container">
     <h1>Entrar al Reto</h1>
     <p class="desc">Únete para mantener tu racha y publicar tus conclusiones.</p>
@@ -38,14 +42,23 @@
     <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
   </div>
 
-  <!-- PANTALLA DEL RETO (Se oculta si NO estás logueado) -->
+  <!-- PANTALLA DEL RETO Y PUBLICACIÓN -->
   <div class="card" id="app-container" style="display: none;">
     <div id="reto-content">Cargando el reto...</div>
+    
+    <!-- NUEVA CAJA PARA ESCRIBIR LA CONCLUSIÓN -->
+    <div class="publish-section">
+      <h3>¿Qué has aprendido hoy?</h3>
+      <textarea id="conclusion-texto" rows="4" placeholder="Escribe aquí tu resumen o reflexión sobre el reto..."></textarea>
+      <button class="btn-primary" onclick="enviarConclusion()">Publicar conclusión</button>
+      <p id="msg-publicacion" style="font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></p>
+    </div>
+
     <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
   </div>
 
   <script>
-    // TUS CLAVES AQUÍ
+    // ¡PON TUS CLAVES AQUÍ!
     const SUPABASE_URL = "https://seklglwsenfsefkjmotf.supabase.co"; 
     const SUPABASE_ANON_KEY = "sb_publishable_0Fza03ndiV9l0XPGPr9m9A_erhuMq3H"; 
 
@@ -63,7 +76,7 @@
       }
     });
 
-    // Funciones de Usuario
+    // Funciones de Usuario (Login/Registro)
     async function registro() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
@@ -87,22 +100,46 @@
     async function cargarReto() {
       const { data, error } = await clienteSupabase.from('retos').select('*').order('created_at', { ascending: false }).limit(1);
       const content = document.getElementById('reto-content');
-
-      if (!data || data.length === 0) {
-        content.innerHTML = '<h1>Aún no hay retos disponibles</h1>';
-        return;
-      }
-
+      if (!data || data.length === 0) return content.innerHTML = '<h1>Aún no hay retos disponibles</h1>';
       const reto = data[0];
       content.innerHTML = `
         <span class="tag">${reto.categoria || 'General'}</span>
         <h1>${reto.titulo}</h1>
         <p class="desc">${reto.descripcion}</p>
-        <div class="box">
-          <div class="box-title">Objetivo / Pregunta Clave de Hoy</div>
-          <div class="box-text">${reto.pregunta_clave}</div>
-        </div>
+        <div class="box"><div class="box-title">Objetivo / Pregunta Clave de Hoy</div><div class="box-text">${reto.pregunta_clave}</div></div>
       `;
+    }
+
+    // NUEVA FUNCIÓN: Enviar la conclusión a Supabase
+    async function enviarConclusion() {
+      const texto = document.getElementById('conclusion-texto').value;
+      const msgInfo = document.getElementById('msg-publicacion');
+
+      if (!texto.trim()) {
+        msgInfo.innerText = "¡Escribe algo antes de publicar!";
+        msgInfo.style.color = "#ef4444"; // Rojo
+        return;
+      }
+
+      msgInfo.innerText = "Publicando...";
+      msgInfo.style.color = "#94a3b8"; // Gris
+
+      // Obtenemos el usuario actual
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+
+      // Enviamos el texto y el ID del usuario a la tabla
+      const { error } = await clienteSupabase
+        .from('publicaciones')
+        .insert([ { contenido: texto, user_id: user.id } ]);
+
+      if (error) {
+        msgInfo.innerText = "Error al publicar: " + error.message;
+        msgInfo.style.color = "#ef4444"; // Rojo
+      } else {
+        msgInfo.innerText = "¡Conclusión publicada con éxito! 🎉";
+        msgInfo.style.color = "#22c55e"; // Verde
+        document.getElementById('conclusion-texto').value = ""; // Limpiamos la caja
+      }
     }
   </script>
 </body>
