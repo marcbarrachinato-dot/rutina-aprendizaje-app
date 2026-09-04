@@ -5,85 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reto de Aprendizaje - 1 Hora al Día</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Importamos una fuente limpia y moderna desde Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    /* Le damos un poco más de margen arriba al body para que respire el reto */
-    body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem 2rem 1rem; }
+    /* Fondo limpio: combinación de blanco roto y un beige muy suave */
+    body { background-color: #fcfbf9; color: #1c1917; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem 2rem 1rem; }
     
-    /* Botón flotante del perfil en la esquina superior derecha */
-    .top-bar { position: fixed; top: 1rem; right: 1rem; z-index: 40; }
-    .compact-profile { background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 9999px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); transition: background 0.2s, transform 0.2s; }
-    .compact-profile:hover { background: #1e293b; transform: scale(1.05); }
+    /* Botón flotante del perfil minimalista en la esquina superior derecha */
+    .top-bar { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 40; }
+    .compact-profile { background: #ffffff; border: 1px solid #e7e5e4; color: #1c1917; padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 9999px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: all 0.2s; }
+    .compact-profile:hover { background: #f5f5f4; border-color: #d6d3d1; transform: translateY(-1px); }
     
-    /* Contenedores principales */
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; max-width: 650px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); margin-bottom: 2rem; }
+    /* Contenedores principales limpios y elegantes */
+    .card { background: #ffffff; border: 1px solid #e7e5e4; border-radius: 1rem; max-width: 650px; width: 100%; padding: 2.5rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02); margin-bottom: 2rem; }
     
     /* Ventana Flotante (Modal) del Perfil */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 50; }
-    .profile-modal { background: #1e293b; border: 1px solid #3b82f6; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-    .profile-header { font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 1.5rem; text-align: center; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(28,25,23,0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 50; }
+    .profile-modal { background: #ffffff; border: 1px solid #e7e5e4; padding: 2.5rem; border-radius: 1rem; max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .profile-header { font-size: 1.5rem; font-weight: 700; color: #1c1917; margin-bottom: 1.5rem; text-align: center; }
     .profile-stats { display: flex; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap; }
-    .stat-box { background: #0f172a; padding: 1rem 0.5rem; border-radius: 0.75rem; flex: 1; min-width: 70px; text-align: center; border: 1px solid #334155; }
-    .stat-val { font-size: 1.25rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; }
-    .stat-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+    .stat-box { background: #fcfbf9; padding: 1rem 0.5rem; border-radius: 0.75rem; flex: 1; min-width: 70px; text-align: center; border: 1px solid #e7e5e4; }
+    .stat-val { font-size: 1.25rem; font-weight: 700; color: #1c1917; margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.6rem; color: #78716c; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
     
-    /* Textos del Reto */
-    .tag { display: inline-block; background: #3b82f6; color: white; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px; margin-bottom: 1rem; }
-    h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff; }
-    p.desc { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
-    .box { background: #0f172a; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
-    .box-title { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 0.25rem; }
-    .box-text { color: #e2e8f0; font-weight: 600; }
+    /* Textos del Reto con estilo editorial */
+    .tag { display: inline-block; background: #f5f5f4; color: #1c1917; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.35rem 0.85rem; border-radius: 9999px; margin-bottom: 1rem; border: 1px solid #e7e5e4; letter-spacing: 0.5px; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #1c1917; letter-spacing: -0.025em; }
+    p.desc { color: #57534e; line-height: 1.7; margin-bottom: 1.5rem; font-size: 1rem; }
     
-    /* Formularios y Botones Generales */
-    input, textarea { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; resize: vertical; }
-    button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; margin-bottom: 0.5rem; transition: opacity 0.2s; }
+    /* Caja de pregunta clave con fondo sutil en tono beige */
+    .box { background: #f7f5f0; border-left: 3px solid #1c1917; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+    .box-title { font-size: 0.75rem; color: #78716c; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
+    .box-text { color: #1c1917; font-weight: 600; line-height: 1.5; }
+    
+    /* Formularios y Inputs limpios */
+    input, textarea { width: 100%; padding: 0.85rem 1rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #d6d3d1; background: #ffffff; color: #1c1917; resize: vertical; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    input:focus, textarea:focus { border-color: #1c1917; }
+    
+    button { width: 100%; padding: 0.85rem; border-radius: 0.5rem; border: none; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; transition: background 0.2s, opacity 0.2s; font-size: 0.95rem; }
     button:hover { opacity: 0.9; }
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-secondary { background: #475569; color: white; }
-    .logout-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; margin-top: 1rem; }
-    #msg { color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
     
-    .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
-    .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+    /* Botones principales en negro elegante */
+    .btn-primary { background: #1c1917; color: #ffffff; }
+    .btn-secondary { background: #e7e5e4; color: #1c1917; border: 1px solid #d6d3d1; }
+    .btn-secondary:hover { background: #d6d3d1; }
+    
+    .logout-btn { background: transparent; color: #dc2626; border: 1px solid #fecaca; margin-top: 1rem; }
+    .logout-btn:hover { background: #fef2f2; }
+    #msg { color: #dc2626; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
+    
+    .publish-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e7e5e4; }
+    .publish-section h3 { font-size: 1.1rem; margin-bottom: 1rem; color: #1c1917; font-weight: 600; }
     
     /* El Muro y Publicaciones */
     .feed-section { width: 100%; max-width: 650px; }
-    .feed-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: #f8fafc; padding-left: 0.5rem; }
-    .publicacion { background: #1e293b; border: 1px solid #334155; padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .feed-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #1c1917; padding-left: 0.25rem; }
+    .publicacion { background: #ffffff; border: 1px solid #e7e5e4; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); }
     .pub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-    .pub-author { font-weight: bold; color: #3b82f6; font-size: 0.95rem; }
-    .pub-date { font-size: 0.75rem; color: #64748b; }
-    .pub-content { color: #cbd5e1; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap; margin-bottom: 1rem; }
+    .pub-author { font-weight: 700; color: #1c1917; font-size: 0.95rem; }
+    .pub-date { font-size: 0.75rem; color: #78716c; }
+    .pub-content { color: #292524; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; margin-bottom: 1rem; }
     
-    .pub-actions { display: flex; gap: 0.5rem; border-top: 1px solid #334155; padding-top: 0.75rem; }
-    .btn-vote { flex: 1; padding: 0.5rem; background: #0f172a; border: 1px solid #334155; color: #f8fafc; cursor: pointer; border-radius: 0.5rem; font-size: 0.9rem; margin-bottom: 0; }
-    .btn-vote:hover { background: #334155; }
+    .pub-actions { display: flex; gap: 0.5rem; border-top: 1px solid #f5f5f4; padding-top: 0.75rem; }
+    .btn-vote { flex: 1; padding: 0.5rem; background: #fcfbf9; border: 1px solid #e7e5e4; color: #44403c; cursor: pointer; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; margin-bottom: 0; transition: background 0.2s; }
+    .btn-vote:hover { background: #f5f5f4; color: #1c1917; }
     
     /* Sección de Respuestas */
-    .respuestas-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #334155; }
-    .respuesta-item { background: #0f172a; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #cbd5e1; }
-    .respuesta-item b { color: #3b82f6; }
-    .respuesta-fecha { display: block; font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; }
+    .respuestas-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #e7e5e4; }
+    .respuesta-item { background: #fcfbf9; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #44403c; border: 1px solid #f0ede6; }
+    .respuesta-item b { color: #1c1917; }
+    .respuesta-fecha { display: block; font-size: 0.65rem; color: #a8a29e; margin-top: 0.2rem; }
     
-    .reply-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .reply-input { flex: 1; padding: 0.5rem; margin-bottom: 0; font-size: 0.85rem; border-color: #334155; }
-    .btn-reply { width: auto; padding: 0.5rem 1rem; background: #475569; color: white; margin-bottom: 0; font-size: 0.85rem; }
+    .reply-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .reply-input { flex: 1; padding: 0.5rem 0.75rem; margin-bottom: 0; font-size: 0.85rem; border-color: #d6d3d1; }
+    .btn-reply { width: auto; padding: 0.5rem 1rem; background: #e7e5e4; color: #1c1917; margin-bottom: 0; font-size: 0.85rem; font-weight: 600; }
+    .btn-reply:hover { background: #d6d3d1; }
   </style>
 </head>
 <body>
 
   <!-- PANTALLA DE LOGIN -->
   <div class="card" id="auth-container">
-    <h1>Entrar al Reto</h1>
-    <p class="desc">Únete para mantener tu racha y debatir con la comunidad.</p>
+    <h1>Acceso al Reto</h1>
+    <p class="desc">Introduce tus credenciales para continuar con tu aprendizaje diario.</p>
     <p id="msg"></p>
-    <input type="email" id="email" placeholder="Tu correo electrónico">
-    <input type="password" id="password" placeholder="Tu contraseña">
+    <input type="email" id="email" placeholder="Correo electrónico">
+    <input type="password" id="password" placeholder="Contraseña">
     <input type="text" id="username" placeholder="Nombre de usuario (Solo para registro)">
     <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
-    <button class="btn-secondary" onclick="registro()">Crearme una cuenta nueva</button>
+    <button class="btn-secondary" onclick="registro()">Crear cuenta nueva</button>
   </div>
 
   <!-- PÍLDORA FLOTANTE DEL PERFIL (ESQUINA SUPERIOR DERECHA) -->
@@ -105,7 +120,7 @@
         <div class="stat-box"><div class="stat-val" id="prof-dislikes">0</div><div class="stat-label">👎 Dislikes</div></div>
       </div>
       <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
-      <button class="btn-secondary" style="margin-top: 0.5rem;" onclick="cerrarModal()">Volver al muro</button>
+      <button class="btn-secondary" style="margin-top: 0.5rem;" onclick="cerrarModal()">Volver</button>
     </div>
   </div>
 
@@ -115,7 +130,7 @@
     
     <div class="publish-section">
       <h3>¿Qué has aprendido hoy?</h3>
-      <textarea id="conclusion-texto" rows="3" placeholder="Escribe aquí tu resumen o reflexión sobre el reto... (Mínimo 50 caracteres)"></textarea>
+      <textarea id="conclusion-texto" rows="3" placeholder="Comparte tu reflexión sobre el reto... (Mínimo 50 caracteres)"></textarea>
       <button class="btn-primary" onclick="enviarConclusion()">Publicar conclusión</button>
       <p id="msg-publicacion" style="font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></p>
     </div>
@@ -123,7 +138,7 @@
 
   <!-- EL MURO (FEED) -->
   <div class="feed-section" id="feed-container" style="display: none;">
-    <h2 class="feed-title">Conclusiones de la comunidad</h2>
+    <h2 class="feed-title">Comunidad</h2>
     <div id="feed-content"></div>
   </div>
 
@@ -134,7 +149,6 @@
 
     const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Detección de sesión
     clienteSupabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         document.getElementById('auth-container').style.display = 'none';
@@ -151,17 +165,14 @@
       }
     });
 
-    // Control del Modal del Perfil
     function abrirModal() { document.getElementById('profile-modal').style.display = 'flex'; }
     function cerrarModal() { document.getElementById('profile-modal').style.display = 'none'; }
 
-    // Carga de Perfil Actualizada para el botón compacto
     async function cargarPerfil() {
       const { data: { user } } = await clienteSupabase.auth.getUser();
       if (!user) return;
       const { data, error } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
       if (data) {
-        // Llenar el modal interior
         document.getElementById('prof-name').innerText = '@' + data.nombre_usuario;
         document.getElementById('prof-racha').innerText = data.racha || 0;
         document.getElementById('prof-max').innerText = data.racha_maxima || 0;
@@ -169,7 +180,6 @@
         document.getElementById('prof-likes').innerText = data.likes_recibidos || 0;
         document.getElementById('prof-dislikes').innerText = data.dislikes_recibidos || 0;
         
-        // Llenar el botón compacto
         document.getElementById('compact-racha').innerText = '🔥 ' + (data.racha || 0);
         document.getElementById('compact-nombre').innerText = '@' + data.nombre_usuario;
       }
@@ -185,7 +195,7 @@
       if (error) { msgInfo.innerText = error.message; return; }
       const { error: perfilError } = await clienteSupabase.from('perfiles').insert([ { id: data.user.id, nombre_usuario: username, racha: 0, racha_maxima: 0, total_publicaciones: 0, likes_recibidos: 0, dislikes_recibidos: 0 } ]);
       if (perfilError) msgInfo.innerText = "Error: " + perfilError.message;
-      else { msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión."; msgInfo.style.color = "#22c55e"; }
+      else { msgInfo.innerText = "¡Cuenta creada! Haz clic en Iniciar Sesión."; msgInfo.style.color = "#16a34a"; }
     }
 
     async function login() {
@@ -216,14 +226,14 @@
       const textoLimpio = texto.trim();
       
       if (textoLimpio.length < 50) { 
-        msgInfo.innerText = "¡Muy corto! Escribe al menos 50 caracteres (llevas " + textoLimpio.length + ")."; msgInfo.style.color = "#ef4444"; return; 
+        msgInfo.innerText = "¡Muy corto! Escribe al menos 50 caracteres (llevas " + textoLimpio.length + ")."; msgInfo.style.color = "#dc2626"; return; 
       }
       
-      msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#94a3b8";
+      msgInfo.innerText = "Publicando..."; msgInfo.style.color = "#78716c";
       const { data: { user } } = await clienteSupabase.auth.getUser();
 
       const { error: pubError } = await clienteSupabase.from('publicaciones').insert([ { contenido: texto, user_id: user.id } ]);
-      if (pubError) { msgInfo.innerText = "Error: " + pubError.message; msgInfo.style.color = "#ef4444"; return; }
+      if (pubError) { msgInfo.innerText = "Error: " + pubError.message; msgInfo.style.color = "#dc2626"; return; }
 
       const { data: perfil } = await clienteSupabase.from('perfiles').select('*').eq('id', user.id).single();
       if (perfil) {
@@ -247,7 +257,7 @@
         }).eq('id', user.id);
       }
 
-      msgInfo.innerText = "¡Publicado! 🎉"; msgInfo.style.color = "#22c55e"; 
+      msgInfo.innerText = "¡Publicado con éxito!"; msgInfo.style.color = "#16a34a"; 
       document.getElementById('conclusion-texto').value = ""; 
       cargarFeed(); cargarPerfil(); setTimeout(() => msgInfo.innerText = "", 3000); 
     }
@@ -269,7 +279,6 @@
       cargarPerfil(); alert("¡Voto registrado!");
     }
 
-    // Función para enviar respuesta
     async function enviarRespuesta(pubId) {
       const inputId = 'reply-input-' + pubId;
       const texto = document.getElementById(inputId).value.trim();
@@ -280,10 +289,9 @@
       const { error } = await clienteSupabase.from('respuestas').insert([ { contenido: texto, user_id: user.id, publicacion_id: pubId } ]);
       
       if (error) { alert("Error al responder: " + error.message); } 
-      else { cargarFeed(); } // Recargar muro para ver la respuesta
+      else { cargarFeed(); } 
     }
 
-    // Cargar Feed ahora también trae las respuestas
     async function cargarFeed() {
       const { data, error } = await clienteSupabase
         .from('publicaciones')
@@ -298,7 +306,7 @@
       feedContent.innerHTML = "";
       
       if (error || !data || data.length === 0) { 
-        feedContent.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>'; return; 
+        feedContent.innerHTML = '<p style="color: #78716c; text-align: center; padding: 2rem;">Sé el primero en compartir tu conclusión hoy.</p>'; return; 
       }
       
       data.forEach(pub => {
